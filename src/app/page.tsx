@@ -20,16 +20,66 @@ export default function Home() {
   const [theme, setTheme] = useState("dark");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingFade, setLoadingFade] = useState(false);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    const newErrors: Record<string, string> = {};
+    const data = new FormData(e.currentTarget);
+    
+    const name = (data.get("Name") as string || "").trim();
+    const email = (data.get("Email") as string || "").trim();
+    const budgetStr = (data.get("Budget") as string || "").trim();
+    const timeline = (data.get("Timeline") as string || "").trim();
+    const message = (data.get("Message") as string || "").trim();
+    
+    if (!name) {
+      newErrors.name = "Name is required.";
+    } else if (name.length < 2) {
+      newErrors.name = "Name must be at least 2 characters.";
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      newErrors.email = "Email address is required.";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+    
+    const budgetNum = Number(budgetStr);
+    if (!budgetStr) {
+      newErrors.budget = "Budget is required.";
+    } else if (isNaN(budgetNum)) {
+      newErrors.budget = "Budget must be a valid number.";
+    } else if (budgetNum < 10000) {
+      newErrors.budget = "Minimum budget threshold is ₹10,000.";
+    }
+    
+    if (!timeline) {
+      newErrors.timeline = "Please select a desired timeline.";
+    }
+    
+    if (!message) {
+      newErrors.message = "Project description is required.";
+    } else if (message.length < 15) {
+      newErrors.message = "Please enter at least 15 characters to explain your requirements.";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    setErrors({});
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
     try {
       const response = await fetch("https://formsubmit.co/ajax/zerofydigital@gmail.com", {
         method: "POST",
-        body: formData,
+        body: data,
         headers: {
           'Accept': 'application/json'
         }
@@ -52,6 +102,34 @@ export default function Home() {
     const savedTheme = localStorage.getItem("zerofy-theme") || "dark";
     setTheme(savedTheme);
     document.documentElement.className = savedTheme + "-theme";
+
+    // Loading screen dismissal
+    const fadeTimer = setTimeout(() => setLoadingFade(true), 2000);
+    const hideTimer = setTimeout(() => setIsLoading(false), 2600);
+
+    // Scroll-reveal via IntersectionObserver
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("sr-visible");
+            observer.unobserve(entry.target); // fire once
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    // Observe after a tiny delay so elements are mounted
+    const obsTimer = setTimeout(() => {
+      document.querySelectorAll(".sr").forEach((el) => observer.observe(el));
+    }, 100);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+      clearTimeout(obsTimer);
+      observer.disconnect();
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -92,6 +170,33 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative font-sans">
+
+      {/* ── Loading Splash Screen ── */}
+      {isLoading && (
+        <div className={`loader-overlay${loadingFade ? " loader-fade-out" : ""}`}>
+          <div className="loader-content">
+            {/* Logo */}
+            <div className="loader-logo">
+              <svg viewBox="0 0 32 32" className="loader-logo-svg" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="3.5" />
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const angle = (i * 2 * Math.PI) / 8;
+                  const cx = 16 + 10 * Math.cos(angle);
+                  const cy = 16 + 10 * Math.sin(angle);
+                  return <circle key={i} cx={cx} cy={cy} r="3.5" />;
+                })}
+              </svg>
+            </div>
+            <p className="loader-brand">Zerofy Digital</p>
+            <p className="loader-tagline">Building the web, beautifully.</p>
+            {/* Progress bar */}
+            <div className="loader-bar-track">
+              <div className="loader-bar-fill" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Aurora glow blobs for colorful background */}
       <div className="glow-blob blob-1" />
       <div className="glow-blob blob-2" />
@@ -99,7 +204,7 @@ export default function Home() {
       <div className="dot-grid-bg"></div>
 
       {/* Navbar */}
-      <header className="navbar">
+      <header className="navbar nav-anim-entry">
         <div className="nav-container">
           <a href="#home" className="logo">
             {/* Custom 8-petal orange flower SVG logo */}
@@ -154,22 +259,22 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="hero-section">
+      <section id="home" className={`hero-section${!isLoading ? " hero-ready" : ""}`}>
         <div className="hero-container">
           
           {/* Hand-drawn Star Sparkle Doodle (Left) */}
-          <svg className="doodle sparkle sparkle-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg className="doodle sparkle sparkle-1 hero-anim-float-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12,2 Q12,12 2,12 Q12,12 12,22 Q12,12 22,12 Q12,12 12,2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           
           {/* Hand-drawn Lightbulb Doodle (Right) */}
-          <svg className="doodle lightbulb-doodle" viewBox="0 0 30 40" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg className="doodle lightbulb-doodle hero-anim-float-right" viewBox="0 0 30 40" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M15,5 C9,5 5,9 5,15 C5,20 8,23 10,26 L10,31 L20,31 L20,26 C22,23 25,20 25,15 C25,9 21,5 15,5 Z" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M12,35 L18,35 M10,31 L20,31" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M15,1 L15,3 M7,7 L8.5,8.5 M3,15 L5,15 M23,7 L21.5,8.5 M27,15 L25,15" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
 
-          <h1 className="hero-title">
+          <h1 className="hero-title hero-anim-title">
             We build{" "}
             <span className="highlight-container text-gradient">
               high-converting websites
@@ -180,19 +285,19 @@ export default function Home() {
             that scale your business.
           </h1>
 
-          <p className="hero-subheading">
+          <p className="hero-subheading hero-anim-sub">
             Combining world-class design, speed optimization, and custom integrations to build digital experiences that drive growth.
           </p>
 
           {/* CTA Wrapper with pointing arrows */}
-          <div className="cta-wrapper">
+          <div className="cta-wrapper hero-anim-cta">
             {/* Left Pointer Arrow */}
             <svg className="cta-arrow arrow-left" viewBox="0 0 60 40">
               <path d="M10,12 C25,8 42,16 48,26 M36,29 L49,27 L44,16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span className="cta-arrow-label label-left">Let's go</span>
 
-            <a href="#contact" className="main-cta-btn">[ Start Your Project ]</a>
+            <a href="#contact" className="main-cta-btn">Build Your Website →</a>
 
             {/* Right Pointer Arrow */}
             <svg className="cta-arrow arrow-right" viewBox="0 0 60 40">
@@ -227,14 +332,14 @@ export default function Home() {
       {/* Services Section */}
       <section id="services" className="services-section">
         <div className="container">
-          <h2 className="section-title">Our Services</h2>
-          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+          <h2 className="section-title sr sr-up">Our Services</h2>
+          <p className="contact-subtitle sr sr-up sr-delay-1" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
             We specialize in crafting premium web systems and database integrations tailored for modern brands.
           </p>
 
           <div className="services-tiles">
             {/* Card 1: Website Development */}
-            <div className="service-card" role="button" tabIndex={0} aria-label="Website development services">
+            <div className="service-card sr sr-scale" role="button" tabIndex={0} aria-label="Website development services">
               <div className="card-header">
                 <div className="card-icon-container">
                   <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="card-icon">
@@ -258,12 +363,15 @@ export default function Home() {
       <section id="work" className="previous-work-section">
         <div className="previous-work-container">
           <div id="website-samples"></div>
-          <h2 className="previous-work-title">PREVIOUS WORK</h2>
+          <h2 className="previous-work-title sr sr-up">PREVIOUS WORK</h2>
 
           {/* Dynamic Editorial Projects list */}
           {projectShowcases.map((project, index) => (
             <React.Fragment key={project.id}>
-              <div className="editorial-project-row" onClick={() => setActiveModal(project.id)}>
+              <div
+                className={`editorial-project-row sr ${index % 2 === 0 ? "sr-left" : "sr-right"}`}
+                onClick={() => setActiveModal(project.id)}
+              >
                 <div className="project-number">0{index + 1}</div>
                 
                 <div className="project-content">
@@ -303,12 +411,12 @@ export default function Home() {
       {/* Contact Section */}
       <section id="contact" className="contact-section">
         <div className="container">
-          <h2 className="section-title">LET'S BUILD TOGETHER.</h2>
-          <p className="contact-subtitle">Have an idea, business, or project in mind? Let's turn it into something exceptional with automation, design, and modern web experiences.</p>
+          <h2 className="section-title sr sr-up">LET'S BUILD TOGETHER.</h2>
+          <p className="contact-subtitle sr sr-up sr-delay-1">Have an idea, business, or project in mind? Let's turn it into something exceptional with automation, design, and modern web experiences.</p>
 
           <div className="contact-layout-wrapper">
             {formSubmitted ? (
-              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px" }}>
+              <div className="contact-form-container sr sr-scale" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px" }}>
                 <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "var(--matcha-bg-light)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--matcha)" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
                     <polyline points="20 6 9 17 4 12" />
@@ -320,7 +428,7 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleFormSubmit} className="contact-form-container">
+              <form onSubmit={handleFormSubmit} className="contact-form-container sr sr-left" noValidate>
                 {/* FormSubmit Helper Configs */}
                 <input type="hidden" name="_subject" value="New Website Inquiry - Zerofy Digital" />
                 <input type="hidden" name="_captcha" value="false" />
@@ -328,11 +436,27 @@ export default function Home() {
                 <div className="form-group-row">
                   <div className="form-group">
                     <label htmlFor="name">Your Name</label>
-                    <input type="text" id="name" name="Name" required placeholder="John Doe" />
+                    <input 
+                      type="text" 
+                      id="name" 
+                      name="Name" 
+                      required 
+                      placeholder="John Doe" 
+                      style={errors.name ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                    />
+                    {errors.name && <span className="field-error-msg">{errors.name}</span>}
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Email Address</label>
-                    <input type="email" id="email" name="Email" required placeholder="john@company.com" />
+                    <input 
+                      type="email" 
+                      id="email" 
+                      name="Email" 
+                      required 
+                      placeholder="john@company.com" 
+                      style={errors.email ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                    />
+                    {errors.email && <span className="field-error-msg">{errors.email}</span>}
                   </div>
                 </div>
                 
@@ -342,30 +466,47 @@ export default function Home() {
                     <input type="text" id="company" name="Company" placeholder="Acme Corp (Optional)" />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="budget">Estimated Budget</label>
-                    <select id="budget" name="Budget" required defaultValue="">
-                      <option value="" disabled>Select budget range</option>
-                      <option value="Under $1,500">Under $1,500</option>
-                      <option value="$1,500 - $3,500">$1,500 - $3,500</option>
-                      <option value="$3,500 - $6,000">$3,500 - $6,000</option>
-                      <option value="$6,000+">$6,000+</option>
-                    </select>
+                    <label htmlFor="budget">Estimated Budget (INR)</label>
+                    <input 
+                      type="number" 
+                      id="budget" 
+                      name="Budget" 
+                      required 
+                      placeholder="₹ Min 10,000" 
+                      style={errors.budget ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                    />
+                    {errors.budget && <span className="field-error-msg">{errors.budget}</span>}
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="timeline">Desired Timeline</label>
-                  <select id="timeline" name="Timeline" required defaultValue="">
+                  <select 
+                    id="timeline" 
+                    name="Timeline" 
+                    required 
+                    defaultValue=""
+                    style={errors.timeline ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                  >
                     <option value="" disabled>Select timeline</option>
                     <option value="Immediate (< 2 weeks)">Immediate (&lt; 2 weeks)</option>
                     <option value="Standard (2-6 weeks)">Standard (2-6 weeks)</option>
                     <option value="Flexible (1-3 months)">Flexible (1-3 months)</option>
                   </select>
+                  {errors.timeline && <span className="field-error-msg">{errors.timeline}</span>}
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="message">Project Description & Requirements</label>
-                  <textarea id="message" name="Message" rows={4} required placeholder="What kind of website do you need, what features are required, and what does your business do?"></textarea>
+                  <textarea 
+                    id="message" 
+                    name="Message" 
+                    rows={4} 
+                    required 
+                    placeholder="What kind of website do you need, what features are required, and what does your business do?"
+                    style={errors.message ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                  ></textarea>
+                  {errors.message && <span className="field-error-msg">{errors.message}</span>}
                 </div>
 
                 <button type="submit" className="form-submit-btn" disabled={isSubmitting}>
@@ -374,7 +515,7 @@ export default function Home() {
               </form>
             )}
 
-            <div className="contact-info-cards">
+            <div className="contact-info-cards sr sr-right">
               <a href="https://www.linkedin.com/company/zerofydigital" target="_blank" rel="noopener noreferrer" className="contact-card">
                 <div className="contact-icon-wrapper">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="contact-icon">

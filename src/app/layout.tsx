@@ -16,34 +16,109 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const BASE_URL = "https://zerofydigital.com";
+
 export const metadata: Metadata = {
-  title: "Zerofy Digital | Premium Web Design & Development Agency",
-  description: "We build luxury, ultra-fast websites and custom web applications that turn visitors into high-value customers. Standard-setting design for startups, SaaS, and premium brands.",
+  metadataBase: new URL(BASE_URL),
+
+  /* ── Core ── */
+  title: {
+    default: "Zerofy Digital | Website Development Agency in India",
+    template: "%s | Zerofy Digital",
+  },
+  description:
+    "Zerofy Digital builds high-converting, ultra-fast websites and custom web applications for businesses in India. Premium web development, UI/UX design, and SEO-optimized digital experiences that drive real growth.",
+
+  /* ── Keywords ── */
   keywords: [
-    "web development agency",
-    "premium web design",
-    "SaaS landing pages",
-    "high-end websites",
-    "Custom React",
-    "Stripe-like design",
-    "luxury web design",
-    "Zerofy Digital"
+    "Zerofy Digital",
+    "Zerofy",
+    "zerofy digital",
+    "zerofydigital",
+    "website development agency India",
+    "web development company India",
+    "premium web design India",
+    "high converting website",
+    "Next.js website development",
+    "custom website design",
+    "business website development",
+    "web agency Ahmedabad",
+    "web design agency Gujarat",
+    "SaaS landing page design",
+    "ecommerce website development",
+    "startup website design",
+    "professional website development",
+    "affordable web development India",
+    "website development agency",
+    "React website development",
+    "Dhruv Khambhata",
+    "zerofydigital.com",
   ],
-  authors: [{ name: "Zerofy Digital" }],
-  robots: "index, follow",
+
+  /* ── Authorship ── */
+  authors: [{ name: "Dhruv Khambhata", url: BASE_URL }],
+  creator: "Zerofy Digital",
+  publisher: "Zerofy Digital",
+  category: "Web Development Agency",
+
+  /* ── Indexing ── */
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  /* ── Canonical ── */
+  alternates: {
+    canonical: BASE_URL,
+  },
+
+  /* ── Open Graph (WhatsApp, Facebook, LinkedIn previews) ── */
   openGraph: {
     type: "website",
-    url: "https://zerofydigital.com/",
-    title: "Zerofy Digital | Premium Web Design & Development Agency",
-    description: "We build luxury, ultra-fast websites and custom web applications that turn visitors into high-value customers.",
-    images: [{ url: "https://zerofydigital.com/assets/og-image.jpg" }]
+    locale: "en_IN",
+    url: BASE_URL,
+    siteName: "Zerofy Digital",
+    title: "Zerofy Digital | Website Development Agency in India",
+    description:
+      "We build high-converting websites and custom web apps for businesses across India. Fast delivery, premium design, and results-driven development.",
+    images: [
+      {
+        url: `${BASE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "Zerofy Digital – Premium Website Development Agency",
+      },
+    ],
   },
+
+  /* ── Twitter / X Card ── */
   twitter: {
     card: "summary_large_image",
-    title: "Zerofy Digital | Premium Web Design & Development Agency",
-    description: "We build luxury, ultra-fast websites and custom web applications that turn visitors into high-value customers.",
-    images: ["https://zerofydigital.com/assets/og-image.jpg"]
-  }
+    site: "@zerofydigital",
+    creator: "@zerofydigital",
+    title: "Zerofy Digital | Website Development Agency in India",
+    description:
+      "High-converting websites and custom web apps for Indian businesses. Premium design. Fast delivery. Real results.",
+    images: [`${BASE_URL}/og-image.png`],
+  },
+
+  /* ── App / PWA hints ── */
+  applicationName: "Zerofy Digital",
+  referrer: "origin-when-cross-origin",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -51,55 +126,97 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Structured Schema data definition
-  const schemaData = {
+  /* ── JSON-LD Structured Data ── */
+  const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "name": "Zerofy Digital",
-    "image": "https://zerofydigital.com/assets/og-image.jpg",
-    "@id": "https://zerofydigital.com/#agency",
-    "url": "https://zerofydigital.com/",
-    "telephone": "+1-800-ZEROFY",
-    "priceRange": "$$$$",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "100 Pine Street",
-      "addressLocality": "San Francisco",
-      "addressRegion": "CA",
-      "postalCode": "94111",
-      "addressCountry": "US"
+    "@type": "Organization",
+    name: "Zerofy Digital",
+    alternateName: ["Zerofy", "zerofydigital"],
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
+    description:
+      "Zerofy Digital is a premium website development agency in India specializing in high-converting websites, custom web applications, and digital experiences.",
+    foundingDate: "2024",
+    founders: [
+      {
+        "@type": "Person",
+        name: "Dhruv Khambhata",
+        sameAs: "https://www.linkedin.com/in/dhruv-khambhata/",
+      },
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "zerofydigital@gmail.com",
+      contactType: "customer support",
+      availableLanguage: ["English", "Hindi", "Gujarati"],
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 37.7925,
-      "longitude": -122.4014
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday"
-      ],
-      "opens": "09:00",
-      "closes": "18:00"
-    },
-    "sameAs": [
-      "https://twitter.com/zerofydigital",
+    sameAs: [
+      "https://www.linkedin.com/company/zerofydigital",
+      "https://www.instagram.com/zerofy.digital/",
       "https://github.com/zerofydigital",
-      "https://linkedin.com/company/zerofydigital"
-    ]
+    ],
+    areaServed: {
+      "@type": "Country",
+      name: "India",
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Web Development Services",
+      itemListElement: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Website Development",
+            description:
+              "Custom high-converting websites built with Next.js, React, and modern web technologies.",
+          },
+        },
+      ],
+    },
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Zerofy Digital",
+    alternateName: "Zerofy",
+    url: BASE_URL,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${BASE_URL}/?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
-        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%235B5FFF'/%3E%3Cpath d='M35 50 L45 60 L65 40' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+        {/* Favicon */}
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='50' cy='20' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='50' cy='80' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='20' cy='50' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='80' cy='50' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='29' cy='29' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='71' cy='29' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='29' cy='71' r='12' fill='%23ef4d23'/%3E%3Ccircle cx='71' cy='71' r='12' fill='%23ef4d23'/%3E%3C/svg%3E"
+        />
+        {/* Geo targeting for India */}
+        <meta name="geo.region" content="IN" />
+        <meta name="geo.placename" content="India" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="rating" content="general" />
+
+        {/* JSON-LD: Organization */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        {/* JSON-LD: WebSite (enables Sitelinks Search Box) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body>
