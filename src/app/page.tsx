@@ -18,6 +18,33 @@ interface ProjectDetails {
 export default function Home() {
   const [activeModal, setActiveModal] = useState<number | null>(null);
   const [theme, setTheme] = useState("dark");
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/zerofydigital@gmail.com", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        setFormSubmitted(true);
+      } else {
+        alert("Something went wrong. Please try again or email us directly at zerofydigital@gmail.com");
+      }
+    } catch (err) {
+      alert("Something went wrong. Please try again or email us directly at zerofydigital@gmail.com");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
 
@@ -280,57 +307,72 @@ export default function Home() {
           <p className="contact-subtitle">Have an idea, business, or project in mind? Let's turn it into something exceptional with automation, design, and modern web experiences.</p>
 
           <div className="contact-layout-wrapper">
-            <form action="https://formsubmit.co/zerofydigital@gmail.com" method="POST" className="contact-form-container">
-              {/* FormSubmit Helper Configs */}
-              <input type="hidden" name="_subject" value="New Website Inquiry - Zerofy Digital" />
-              <input type="hidden" name="_next" value="https://www.shantidentalcarenikol.com/" />
-              <input type="hidden" name="_captcha" value="false" />
-              
-              <div className="form-group-row">
-                <div className="form-group">
-                  <label htmlFor="name">Your Name</label>
-                  <input type="text" id="name" name="Name" required placeholder="John Doe" />
+            {formSubmitted ? (
+              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px" }}>
+                <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "var(--matcha-bg-light)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--matcha)" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email Address</label>
-                  <input type="email" id="email" name="Email" required placeholder="john@company.com" />
-                </div>
+                <h3 style={{ fontFamily: "var(--font-headings)", fontSize: "1.8rem", fontWeight: 800, color: "var(--text-main)" }}>Message Sent Successfully!</h3>
+                <p style={{ color: "var(--text-body)", fontSize: "1rem", lineHeight: "1.6", maxWidth: "450px" }}>
+                  Thank you for reaching out to Zerofy Digital. We will review your inquiry and get back to you within 24 hours.
+                </p>
               </div>
-              
-              <div className="form-group-row">
-                <div className="form-group">
-                  <label htmlFor="company">Company / Website</label>
-                  <input type="text" id="company" name="Company" placeholder="Acme Corp (Optional)" />
+            ) : (
+              <form onSubmit={handleFormSubmit} className="contact-form-container">
+                {/* FormSubmit Helper Configs */}
+                <input type="hidden" name="_subject" value="New Website Inquiry - Zerofy Digital" />
+                <input type="hidden" name="_captcha" value="false" />
+                
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label htmlFor="name">Your Name</label>
+                    <input type="text" id="name" name="Name" required placeholder="John Doe" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <input type="email" id="email" name="Email" required placeholder="john@company.com" />
+                  </div>
                 </div>
+                
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label htmlFor="company">Company / Website</label>
+                    <input type="text" id="company" name="Company" placeholder="Acme Corp (Optional)" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="budget">Estimated Budget</label>
+                    <select id="budget" name="Budget" required defaultValue="">
+                      <option value="" disabled>Select budget range</option>
+                      <option value="Under $1,500">Under $1,500</option>
+                      <option value="$1,500 - $3,500">$1,500 - $3,500</option>
+                      <option value="$3,500 - $6,000">$3,500 - $6,000</option>
+                      <option value="$6,000+">$6,000+</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label htmlFor="budget">Estimated Budget</label>
-                  <select id="budget" name="Budget" required defaultValue="">
-                    <option value="" disabled>Select budget range</option>
-                    <option value="Under $1,500">Under $1,500</option>
-                    <option value="$1,500 - $3,500">$1,500 - $3,500</option>
-                    <option value="$3,500 - $6,000">$3,500 - $6,000</option>
-                    <option value="$6,000+">$6,000+</option>
+                  <label htmlFor="timeline">Desired Timeline</label>
+                  <select id="timeline" name="Timeline" required defaultValue="">
+                    <option value="" disabled>Select timeline</option>
+                    <option value="Immediate (< 2 weeks)">Immediate (&lt; 2 weeks)</option>
+                    <option value="Standard (2-6 weeks)">Standard (2-6 weeks)</option>
+                    <option value="Flexible (1-3 months)">Flexible (1-3 months)</option>
                   </select>
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label htmlFor="timeline">Desired Timeline</label>
-                <select id="timeline" name="Timeline" required defaultValue="">
-                  <option value="" disabled>Select timeline</option>
-                  <option value="Immediate (< 2 weeks)">Immediate (&lt; 2 weeks)</option>
-                  <option value="Standard (2-6 weeks)">Standard (2-6 weeks)</option>
-                  <option value="Flexible (1-3 months)">Flexible (1-3 months)</option>
-                </select>
-              </div>
+                <div className="form-group">
+                  <label htmlFor="message">Project Description & Requirements</label>
+                  <textarea id="message" name="Message" rows={4} required placeholder="What kind of website do you need, what features are required, and what does your business do?"></textarea>
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="message">Project Description & Requirements</label>
-                <textarea id="message" name="Message" rows={4} required placeholder="What kind of website do you need, what features are required, and what does your business do?"></textarea>
-              </div>
-
-              <button type="submit" className="form-submit-btn">[ Submit Inquiry ]</button>
-            </form>
+                <button type="submit" className="form-submit-btn" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "[ Submit Inquiry ]"}
+                </button>
+              </form>
+            )}
 
             <div className="contact-info-cards">
               <a href="https://www.linkedin.com/company/zerofydigital" target="_blank" rel="noopener noreferrer" className="contact-card">
