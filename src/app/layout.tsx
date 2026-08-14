@@ -4,6 +4,7 @@ import "./globals.css";
 import MouseGlow from "@/components/MouseGlow";
 import CustomCursor from "@/components/CustomCursor";
 import AiReceptionist from "@/components/AiReceptionist";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -225,6 +226,7 @@ export default function RootLayout({
         <CustomCursor />
         {children}
         <AiReceptionist />
+        <Analytics />
         
         {/* Floating WhatsApp Widget */}
         <a 
