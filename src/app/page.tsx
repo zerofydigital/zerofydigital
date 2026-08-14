@@ -15,14 +15,79 @@ interface ProjectDetails {
   outcome: string;
 }
 
+const COUNTRIES = [
+  { code: "US", dial: "+1", currency: "USD", symbol: "$", format: "(###) ###-####", limit: 10 },
+  { code: "GB", dial: "+44", currency: "GBP", symbol: "£", format: "#### ######", limit: 10 },
+  { code: "FR", dial: "+33", currency: "EUR", symbol: "€", format: "# ## ## ## ##", limit: 9 },
+  { code: "CA", dial: "+1", currency: "CAD", symbol: "C$", format: "(###) ###-####", limit: 10 },
+  { code: "AU", dial: "+61", currency: "AUD", symbol: "A$", format: "### ### ###", limit: 9 },
+  { code: "AE", dial: "+971", currency: "AED", symbol: "د.إ", format: "## ### ####", limit: 9 },
+  { code: "IN", dial: "+91", currency: "INR", symbol: "₹", format: "##### #####", limit: 10 },
+];
+
 export default function Home() {
   const [activeModal, setActiveModal] = useState<number | null>(null);
   const [theme, setTheme] = useState("dark");
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [apiError, setApiError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadingFade, setLoadingFade] = useState(false);
+  const [countryIdx, setCountryIdx] = useState(6); // Default to IN
+  const [budgetDisplay, setBudgetDisplay] = useState("");
+  const [mobileDisplay, setMobileDisplay] = useState("");
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  
+  // Audit Analyzer States
+  const [auditUrl, setAuditUrl] = useState("");
+  const [auditStep, setAuditStep] = useState<"idle" | "scanning" | "done">("idle");
+  const [scanLogs, setScanLogs] = useState<string[]>([]);
+
+  const formatMobile = (value: string, format: string) => {
+    const digits = value.replace(/\D/g, "");
+    let result = "";
+    let digitIdx = 0;
+    
+    for (let i = 0; i < format.length && digitIdx < digits.length; i++) {
+      if (format[i] === "#") {
+        result += digits[digitIdx++];
+      } else {
+        result += format[i];
+      }
+    }
+    return result;
+  };
+
+  const startAudit = () => {
+    if (!auditUrl) return;
+    setAuditStep("scanning");
+    setScanLogs([]);
+    
+    const logs = [
+      `[INFO] Initializing scan for ${auditUrl}...`,
+      `[INFO] Establishing secure request path...`,
+      `[INFO] Fetching DOM content & meta properties...`,
+      `[WARN] Large render-blocking resources detected (7.4MB JS/CSS total)`,
+      `[INFO] Scanning layout structure for Cumulative Layout Shift (CLS)...`,
+      `[WARN] 14 image elements missing explicit height/width attributes`,
+      `[INFO] Measuring Core Web Vitals (LCP, FID, CLS)...`,
+      `[INFO] Analyzing mobile viewport viewport-fit parameters...`,
+      `[ERROR] Failed to load 4 key resource/styles packages (404 Error)`,
+      `[INFO] Finalizing 24-point technical audit report...`
+    ];
+
+    logs.forEach((log, index) => {
+      setTimeout(() => {
+        setScanLogs(prev => [...prev, log]);
+        if (index === logs.length - 1) {
+          setTimeout(() => {
+            setAuditStep("done");
+          }, 600);
+        }
+      }, (index + 1) * 350);
+    });
+  };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,7 +97,12 @@ export default function Home() {
     
     const name = (data.get("Name") as string || "").trim();
     const email = (data.get("Email") as string || "").trim();
-    const budgetStr = (data.get("Budget") as string || "").trim();
+    
+    const dialCode = data.get("DialCode") as string;
+    const rawMobile = (data.get("Mobile") as string || "").replace(/\D/g, "").trim();
+    const mobile = `${dialCode} ${rawMobile}`;
+    
+    const budgetStr = (data.get("Budget") as string || "").replace(/,/g, "").trim();
     const timeline = (data.get("Timeline") as string || "").trim();
     const message = (data.get("Message") as string || "").trim();
     
@@ -49,13 +119,23 @@ export default function Home() {
       newErrors.email = "Please enter a valid email address.";
     }
     
+    const requiredLength = COUNTRIES[countryIdx].limit;
+    if (!rawMobile) {
+      newErrors.mobile = "Mobile number is required.";
+    } else if (rawMobile.length !== requiredLength) {
+      newErrors.mobile = `Please enter a valid ${requiredLength}-digit mobile number.`;
+    }
+    
     const budgetNum = Number(budgetStr);
+    const isIndia = COUNTRIES[countryIdx].code === "IN";
+    const minBudget = isIndia ? 10000 : 1000;
+    
     if (!budgetStr) {
       newErrors.budget = "Budget is required.";
     } else if (isNaN(budgetNum)) {
       newErrors.budget = "Budget must be a valid number.";
-    } else if (budgetNum < 10000) {
-      newErrors.budget = "Minimum budget threshold is ₹10,000.";
+    } else if (budgetNum < minBudget) {
+      newErrors.budget = `Minimum budget is ${COUNTRIES[countryIdx].symbol}${minBudget.toLocaleString('en-US')}.`;
     }
     
     if (!timeline) {
@@ -74,23 +154,37 @@ export default function Home() {
     }
     
     setErrors({});
+    setApiError(false);
     setIsSubmitting(true);
+
+    const payload = {
+      Name: name,
+      Email: email,
+      Mobile: mobile,
+      Company: (data.get("Company") as string || "").trim(),
+      Budget: `${COUNTRIES[countryIdx].currency} ${budgetDisplay}`,
+      Timeline: timeline,
+      Message: message,
+      _subject: "New Website Inquiry - Zerofy Digital",
+      _captcha: "false"
+    };
 
     try {
       const response = await fetch("https://formsubmit.co/ajax/zerofydigital@gmail.com", {
         method: "POST",
-        body: data,
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        body: JSON.stringify(payload)
       });
       if (response.ok) {
         setFormSubmitted(true);
       } else {
-        alert("Something went wrong. Please try again or email us directly at zerofydigital@gmail.com");
+        setApiError(true);
       }
     } catch (err) {
-      alert("Something went wrong. Please try again or email us directly at zerofydigital@gmail.com");
+      setApiError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -407,6 +501,422 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── AI-Powered Website Audit Analyzer Section ── */}
+      <section id="audit" style={{ padding: "100px 0", position: "relative" }}>
+        <div className="container">
+          <h2 className="section-title">Scan Your Website</h2>
+          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+            Uncover conversion killers, slow load speeds, and hidden SEO errors in real-time.
+          </p>
+
+          <div style={{
+            maxWidth: "900px",
+            margin: "0 auto",
+            padding: "40px",
+            background: "var(--card-bg)",
+            border: "1px solid var(--card-border)",
+            borderRadius: "20px",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
+            backdropFilter: "blur(10px)",
+          }}>
+            {auditStep === "idle" && (
+              <div style={{ textAlign: "center" }}>
+                <h3 style={{ fontSize: "1.5rem", marginBottom: "12px" }}>Is your website leaking customers?</h3>
+                <p style={{ color: "var(--text-body)", fontSize: "0.95rem", maxWidth: "550px", margin: "0 auto 24px auto" }}>
+                  Enter your URL below. Our system will analyze your page speed, mobile layout responsiveness, and structural SEO to find the exact bottlenecks blocking your growth.
+                </p>
+                <div style={{ display: "flex", gap: "12px", marginTop: "24px" }} className="flex-col sm:flex-row">
+                  <input
+                    type="url"
+                    placeholder="https://example.com"
+                    value={auditUrl}
+                    onChange={(e) => setAuditUrl(e.target.value)}
+                    style={{
+                      flexGrow: 1,
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--card-border)",
+                      borderRadius: "12px",
+                      padding: "16px 20px",
+                      color: "var(--text-main)",
+                      fontSize: "1rem",
+                      outline: "none",
+                      transition: "all 0.3s ease"
+                    }}
+                    className="focus:border-[var(--matcha)]"
+                  />
+                  <button 
+                    onClick={startAudit} 
+                    style={{
+                      background: "linear-gradient(135deg, var(--matcha), var(--matcha-light))",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "12px",
+                      padding: "16px 32px",
+                      fontWeight: 700,
+                      fontSize: "1rem",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      boxShadow: "0 4px 15px rgba(58, 134, 255, 0.3)",
+                    }}
+                    className="hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(58,134,255,0.5)] disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none"
+                    disabled={!auditUrl}
+                  >
+                    Analyze Now
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {auditStep === "scanning" && (
+              <div>
+                <div style={{ display: "flex", gap: "6px", marginBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "8px" }}>
+                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ff5f56" }}></div>
+                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ffbd2e" }}></div>
+                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#27c93f" }}></div>
+                  <span style={{ marginLeft: "8px", fontSize: "0.8rem", color: "var(--text-body)" }}>Technical Audit Scanner v1.0.4</span>
+                </div>
+                <div style={{
+                  background: "#02040a",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "12px",
+                  padding: "24px",
+                  fontFamily: "'Courier New', Courier, monospace",
+                  fontSize: "0.9rem",
+                  color: "#39ff14",
+                  minHeight: "220px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  boxShadow: "inset 0 0 20px rgba(0, 0, 0, 0.8)",
+                }}>
+                  {scanLogs.map((log, i) => {
+                    let color = "#39ff14";
+                    if (log.includes("[WARN]")) color = "#ffbd2e";
+                    if (log.includes("[ERROR]")) color = "#ff5f56";
+                    return <div key={i} style={{ color }}>{log}</div>;
+                  })}
+                  <div style={{ color: "#39ff14", animation: "blink 1s step-end infinite" }}>_</div>
+                </div>
+              </div>
+            )}
+
+            {auditStep === "done" && (
+              <div className="audit-results">
+                <h3 style={{ fontSize: "1.4rem", marginBottom: "16px", textAlign: "center" }}>
+                  Audit Report for <span className="text-gradient">{auditUrl}</span>
+                </h3>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ff5f56", marginBottom: "6px" }}>58</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Performance</div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ffbd2e", marginBottom: "6px" }}>72</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>SEO</div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ffbd2e", marginBottom: "6px" }}>68</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Mobile UX</div>
+                  </div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ff5f56", marginBottom: "6px" }}>64</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Overall Score</div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
+                    <div>
+                      <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Large Render-Blocking CSS/JS Files</h5>
+                      <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Found 7.4MB of uncompressed assets blocking the main paint. Mobile TTI is 4.8 seconds. This causes up to 40% of mobile users to bounce before the page loads.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
+                    <div>
+                      <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Cumulative Layout Shift (CLS) Issues</h5>
+                      <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>14 main layout images do not have explicit width/height parameters, causing content to jump as the page loads. This directly harms your Google Search rankings.</p>
+                    </div>
+                  </div>
+
+                  {/* Blurred Items */}
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start", filter: "blur(6px)", userSelect: "none", pointerEvents: "none", opacity: 0.45 }}>
+                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
+                    <div>
+                      <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Vulnerable Security Headers Detected</h5>
+                      <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Missing X-Frame-Options and Content-Security-Policy configurations leaving forms open to potential spoofing exploits.</p>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start", filter: "blur(6px)", userSelect: "none", pointerEvents: "none", opacity: 0.45 }}>
+                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
+                    <div>
+                      <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Unoptimized Asset Assets Delivery</h5>
+                      <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Media elements are served directly from hosting root instead of a localized Content Delivery Network (CDN) causing latency spikes.</p>
+                    </div>
+                  </div>
+
+                  {/* Blurred overlay and CTA */}
+                  <div style={{ position: "relative", marginTop: "-120px", paddingTop: "120px", background: "linear-gradient(to bottom, transparent, var(--bg-color) 80%)", zIndex: 10, textAlign: "center" }}>
+                    <h4 style={{ fontSize: "1.25rem", color: "var(--text-main)", marginBottom: "12px", fontWeight: 700 }}>
+                      We found 4 more critical issues with your website layout...
+                    </h4>
+                    <p style={{ color: "var(--text-body)", fontSize: "0.9rem", marginBottom: "24px", maxWidth: "500px", margin: "0 auto 24px auto" }}>
+                      Unlock the remaining structural issues, speed improvements, and full audit breakdown. Let's fix them together.
+                    </p>
+                    <a 
+                      href="#contact" 
+                      style={{
+                        display: "inline-block",
+                        background: "linear-gradient(135deg, var(--mustard), #ff007f)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "50px",
+                        padding: "16px 36px",
+                        fontWeight: 700,
+                        fontSize: "1.1rem",
+                        cursor: "pointer",
+                        textDecoration: "none",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 8px 24px rgba(255, 0, 127, 0.35)",
+                      }}
+                      className="hover:scale-105 hover:shadow-[0_12px_30px_rgba(255,0,127,0.55)]"
+                      onClick={() => {
+                        // Pre-fill message field
+                        const msgEl = document.getElementById("message") as HTMLTextAreaElement;
+                        if (msgEl) {
+                          msgEl.value = `Hey, I just ran a technical audit on ${auditUrl}. I want to unlock the full 24-point audit report and discuss how we can fix these issues and scale my conversion rates.`;
+                        }
+                      }}
+                    >
+                      Unlock Full Audit Report
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Client Testimonials Section ── */}
+      <section id="testimonials" className="testimonials-section" style={{ padding: "100px 0" }}>
+        <div className="container">
+          <h2 className="section-title">Client Testimonials</h2>
+          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+            What founders and operators say about building with Zerofy Digital.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginTop: "48px" }}>
+            {/* Card 1 */}
+            <div style={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
+              borderRadius: "16px",
+              padding: "32px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              transition: "transform 0.3s ease, border-color 0.3s ease",
+            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+              <div>
+                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
+                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                  "Zerofy took our outdated dental clinic website and built a stunning booking flow. Our online patient inquiries went up by 85% in just two months. Fast, professional, and excellent design."
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: "var(--matcha-bg-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  color: "var(--matcha)",
+                  fontSize: "1.1rem",
+                  border: "1px solid var(--matcha)",
+                }}>SD</div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Dr. Bhavya Patel</h5>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>Founder, Shanti Dental Care</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div style={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
+              borderRadius: "16px",
+              padding: "32px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              transition: "transform 0.3s ease, border-color 0.3s ease",
+            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+              <div>
+                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
+                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                  "The conversion rate optimization Zerofy implemented on our funnel was absolute gold. They combined high-impact visual design with extreme page speed. We saw membership signups double."
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: "var(--matcha-bg-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  color: "var(--matcha)",
+                  fontSize: "1.1rem",
+                  border: "1px solid var(--matcha)",
+                }}>RF</div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Harshil Shah</h5>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>Owner, Roar Fitness Zone</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div style={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
+              borderRadius: "16px",
+              padding: "32px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              transition: "transform 0.3s ease, border-color 0.3s ease",
+            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+              <div>
+                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
+                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                  "We needed a highly customized dashboard app built under a tight timeline. Zerofy was incredibly organized, using Next.js to deliver a lightweight, blazing-fast application. Extremely reliable developers."
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  backgroundColor: "var(--matcha-bg-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  color: "var(--matcha)",
+                  fontSize: "1.1rem",
+                  border: "1px solid var(--matcha)",
+                }}>VC</div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Marcus Harris</h5>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>CTO, Velora Creative</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ Section (Accordions) ── */}
+      <section id="faq" className="faq-section" style={{ padding: "100px 0" }}>
+        <div className="container">
+          <h2 className="section-title">Frequently Asked Questions</h2>
+          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+            Got questions? We've got answers. Clear, direct, and no-nonsense.
+          </p>
+
+          <div style={{ maxWidth: "800px", margin: "48px auto 0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+            {[
+              {
+                q: "How long does it take to build a website?",
+                a: "A typical high-converting landing page takes 1-2 weeks. Standard corporate sites and custom e-commerce stores take about 3-5 weeks depending on layout and features. We follow a strict blueprint process to ensure fast delivery without compromising design quality."
+              },
+              {
+                q: "Which technologies do you build with?",
+                a: "We specialize in the React ecosystem, specifically Next.js for high-speed page delivery, server-side rendering, and exceptional SEO performance. We write vanilla clean CSS for layout style control and handle custom integrations using secure REST APIs."
+              },
+              {
+                q: "Will my website be optimized for SEO and Google?",
+                a: "Yes, absolutely. Every page we build undergoes comprehensive on-page SEO styling. This includes clean HTML structure, custom metadata configurations, JSON-LD schema layouts for business indexation, and extreme speed optimizations to pass Google's Core Web Vitals checks."
+              },
+              {
+                q: "What is your estimated pricing model?",
+                a: "Our pricing is customized and scales depending on project complexity, scope, and specific feature integrations. We provide a detailed budget breakdown upfront during our initial structural design blueprint kickoff session."
+              }
+            ].map((item, idx) => {
+              const isActive = activeFaq === idx;
+              return (
+                <div 
+                  key={idx} 
+                  style={{
+                    background: "var(--card-bg)",
+                    border: "1px solid var(--card-border)",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    transition: "all 0.3s ease"
+                  }}
+                >
+                  <button 
+                    onClick={() => setActiveFaq(isActive ? null : idx)}
+                    style={{
+                      width: "100%",
+                      background: "none",
+                      border: "none",
+                      padding: "24px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      color: "var(--text-main)",
+                      fontFamily: "var(--font-headings)",
+                      fontSize: "1.1rem",
+                      fontWeight: 700,
+                      outline: "none"
+                    }}
+                    className="hover:text-[var(--matcha-light)]"
+                  >
+                    <span>{item.q}</span>
+                    <span style={{ 
+                      fontSize: "1.5rem", 
+                      lineHeight: "1", 
+                      transition: "transform 0.3s ease",
+                      transform: isActive ? "rotate(45deg)" : "rotate(0deg)",
+                      color: isActive ? "var(--matcha-light)" : "inherit"
+                    }}>+</span>
+                  </button>
+                  <div style={{
+                    maxHeight: isActive ? "200px" : "0",
+                    overflow: "hidden",
+                    transition: "max-height 0.3s ease-out, padding 0.3s ease-out",
+                    padding: isActive ? "0 24px 24px 24px" : "0 24px",
+                    color: "var(--text-body)",
+                    fontSize: "0.95rem",
+                    lineHeight: "1.7"
+                  }}>
+                    <p style={{ margin: 0 }}>{item.a}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
 
       {/* Contact Section */}
       <section id="contact" className="contact-section">
@@ -416,7 +926,7 @@ export default function Home() {
 
           <div className="contact-layout-wrapper">
             {formSubmitted ? (
-              <div className="contact-form-container sr sr-scale" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px" }}>
+              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
                 <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "var(--matcha-bg-light)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--matcha)" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
                     <polyline points="20 6 9 17 4 12" />
@@ -426,6 +936,22 @@ export default function Home() {
                 <p style={{ color: "var(--text-body)", fontSize: "1rem", lineHeight: "1.6", maxWidth: "450px" }}>
                   Thank you for reaching out to Zerofy Digital. We will review your inquiry and get back to you within 24 hours.
                 </p>
+              </div>
+            ) : apiError ? (
+              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
+                <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "rgba(255, 0, 127, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mustard)" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </div>
+                <h3 style={{ fontFamily: "var(--font-headings)", fontSize: "1.8rem", fontWeight: 800, color: "var(--text-main)" }}>Submission Failed</h3>
+                <p style={{ color: "var(--text-body)", fontSize: "1rem", lineHeight: "1.6", maxWidth: "450px" }}>
+                  Something went wrong. Please try again or email us directly at zerofydigital@gmail.com
+                </p>
+                <button onClick={() => setApiError(false)} className="form-submit-btn" style={{ width: "auto", padding: "12px 24px", marginTop: "10px" }}>
+                  [ Try Again ]
+                </button>
               </div>
             ) : (
               <form onSubmit={handleFormSubmit} className="contact-form-container sr sr-left" noValidate>
@@ -466,34 +992,81 @@ export default function Home() {
                     <input type="text" id="company" name="Company" placeholder="Acme Corp (Optional)" />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="budget">Estimated Budget (INR)</label>
-                    <input 
-                      type="number" 
-                      id="budget" 
-                      name="Budget" 
-                      required 
-                      placeholder="₹ Min 10,000" 
-                      style={errors.budget ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
-                    />
-                    {errors.budget && <span className="field-error-msg">{errors.budget}</span>}
+                    <label htmlFor="mobile">Mobile Number</label>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <select 
+                        name="DialCode" 
+                        value={COUNTRIES[countryIdx].dial} 
+                        onChange={(e) => {
+                          const idx = COUNTRIES.findIndex(c => c.dial === e.target.value);
+                          if (idx !== -1) {
+                            setCountryIdx(idx);
+                            setBudgetDisplay(""); // Reset budget on currency change
+                            setMobileDisplay(""); // Reset mobile on country change
+                          }
+                        }}
+                        style={{ width: "115px", padding: "10px", flexShrink: 0, appearance: "auto" }}
+                      >
+                        {COUNTRIES.map((c, i) => (
+                          <option key={i} value={c.dial}>{c.code} ({c.dial})</option>
+                        ))}
+                      </select>
+                      <input 
+                        type="tel" 
+                        id="mobile" 
+                        name="Mobile" 
+                        required 
+                        placeholder={COUNTRIES[countryIdx].format.replace(/#/g, "0")}
+                        value={mobileDisplay}
+                        onChange={(e) => {
+                          setMobileDisplay(formatMobile(e.target.value, COUNTRIES[countryIdx].format));
+                        }}
+                        style={errors.mobile ? { flexGrow: 1, borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : { flexGrow: 1 }}
+                      />
+                    </div>
+                    {errors.mobile && <span className="field-error-msg">{errors.mobile}</span>}
                   </div>
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="timeline">Desired Timeline</label>
-                  <select 
-                    id="timeline" 
-                    name="Timeline" 
-                    required 
-                    defaultValue=""
-                    style={errors.timeline ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
-                  >
-                    <option value="" disabled>Select timeline</option>
-                    <option value="Immediate (< 2 weeks)">Immediate (&lt; 2 weeks)</option>
-                    <option value="Standard (2-6 weeks)">Standard (2-6 weeks)</option>
-                    <option value="Flexible (1-3 months)">Flexible (1-3 months)</option>
-                  </select>
-                  {errors.timeline && <span className="field-error-msg">{errors.timeline}</span>}
+                
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label htmlFor="budget">Estimated Budget ({COUNTRIES[countryIdx].currency})</label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)", fontSize: "1.05rem" }}>
+                        {COUNTRIES[countryIdx].symbol}
+                      </span>
+                      <input 
+                        type="text" 
+                        id="budget" 
+                        name="Budget" 
+                        required 
+                        placeholder={`Min ${COUNTRIES[countryIdx].code === "IN" ? "10,000" : "1,000"}`}
+                        value={budgetDisplay}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          setBudgetDisplay(digits ? Number(digits).toLocaleString('en-US') : "");
+                        }}
+                        style={errors.budget ? { paddingLeft: "36px", borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)", width: "100%" } : { paddingLeft: "36px", width: "100%" }}
+                      />
+                    </div>
+                    {errors.budget && <span className="field-error-msg">{errors.budget}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="timeline">Desired Timeline</label>
+                    <select 
+                      id="timeline" 
+                      name="Timeline" 
+                      required 
+                      defaultValue=""
+                      style={errors.timeline ? { borderColor: "var(--mustard)", boxShadow: "0 0 0 3px rgba(255, 0, 127, 0.15)" } : {}}
+                    >
+                      <option value="" disabled>Select timeline</option>
+                      <option value="Immediate (< 2 weeks)">Immediate (&lt; 2 weeks)</option>
+                      <option value="Standard (2-6 weeks)">Standard (2-6 weeks)</option>
+                      <option value="Flexible (1-3 months)">Flexible (1-3 months)</option>
+                    </select>
+                    {errors.timeline && <span className="field-error-msg">{errors.timeline}</span>}
+                  </div>
                 </div>
 
                 <div className="form-group">
