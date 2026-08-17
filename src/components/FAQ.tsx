@@ -66,7 +66,7 @@ export default function FAQ() {
                 <div
                   className="faq-answer"
                   style={{
-                    maxHeight: isActive ? "200px" : "0px", // fixed max height range for smooth transition
+                    maxHeight: isActive ? "400px" : "0px", // increased from 200px to prevent truncation on mobile
                     transition: "max-height 0.3s ease-out"
                   }}
                 >

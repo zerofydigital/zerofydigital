@@ -31,10 +31,10 @@ export default function AboutPage() {
               <span className="badge-dot"></span>
               <span>Our Agency Story</span>
             </div>
-            <h1 className="hero-title" style={{ fontSize: "3rem", maxWidth: "800px" }}>
+            <h1 className="subpage-hero-title">
               Standardizing Web Excellence. <span className="text-gradient">Zero Shortcuts</span>.
             </h1>
-            <p className="hero-subtitle" style={{ fontSize: "1.1rem", maxWidth: "600px", marginTop: "16px" }}>
+            <p className="subpage-hero-subtitle">
               Zerofy Digital was founded to solve a critical issue: bloated templates and slow codebases. We believe that premium brands deserve handcrafted digital interfaces that look like art and run like software.
             </p>
           </ScrollReveal>

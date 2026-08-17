@@ -132,10 +132,10 @@ export default function PortfolioPage() {
               <span className="badge-dot"></span>
               <span>Case Studies</span>
             </div>
-            <h1 className="hero-title" style={{ fontSize: "3.5rem", maxWidth: "800px" }}>
+            <h1 className="subpage-hero-title">
               Our Case Studies & <span className="text-gradient">Bespoke Work</span>.
             </h1>
-            <p className="hero-subtitle" style={{ fontSize: "1.1rem", maxWidth: "600px", marginTop: "16px" }}>
+            <p className="subpage-hero-subtitle">
               A collection of high-performance digital engines we built for global clients. Filter projects by industry discipline.
             </p>
           </ScrollReveal>

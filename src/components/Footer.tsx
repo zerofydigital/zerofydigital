@@ -22,21 +22,22 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-brand">
             <Link href="/" className="logo">
-              <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" stroke="url(#logoGradFooter1)" strokeWidth="8" />
-                <path d="M30 50 L45 65 L70 35" stroke="url(#logoGradFooter2)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-                <defs>
-                  <linearGradient id="logoGradFooter1" x1="0" y1="0" x2="100" y2="100">
-                    <stop offset="0%" stopColor="#5B5FFF" />
-                    <stop offset="100%" stopColor="#00E5FF" />
-                  </linearGradient>
-                  <linearGradient id="logoGradFooter2" x1="0" y1="0" x2="100" y2="100">
-                    <stop offset="0%" stopColor="#8B5CF6" />
-                    <stop offset="100%" stopColor="#00E5FF" />
-                  </linearGradient>
-                </defs>
+              {/* Custom 8-petal orange flower SVG logo */}
+              <svg
+                viewBox="0 0 32 32"
+                className="logo-icon"
+                style={{ height: "28px", width: "28px", fill: "#ef4d23" }}
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="16" cy="16" r="3.5" />
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const angle = (i * 2 * Math.PI) / 8;
+                  const cx = 16 + 10 * Math.cos(angle);
+                  const cy = 16 + 10 * Math.sin(angle);
+                  return <circle key={i} cx={cx} cy={cy} r="3.5" />;
+                })}
               </svg>
-              <span>Zerofy<span className="logo-accent">.</span></span>
+              Zerofy Digital
             </Link>
             <p className="footer-tagline">
               Setting modern design and engineering benchmarks for companies worldwide.

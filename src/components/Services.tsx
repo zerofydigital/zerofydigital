@@ -129,8 +129,12 @@ export default function Services() {
           {serviceList.map((item, idx) => (
             <ScrollReveal key={idx}>
               <div className="service-card" onMouseMove={handleMouseMove}>
-                <div className="card-icon">{item.icon}</div>
-                <h3 className="card-title">{item.title}</h3>
+                <div className="card-header">
+                  <div className="card-icon-container">
+                    {item.icon}
+                  </div>
+                  <h3 className="card-title large">{item.title}</h3>
+                </div>
                 <p className="card-description">{item.desc}</p>
               </div>
             </ScrollReveal>

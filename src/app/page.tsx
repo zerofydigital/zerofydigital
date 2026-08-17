@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Header from "@/components/Header";
 
 interface ProjectDetails {
   id: number;
@@ -27,7 +28,6 @@ const COUNTRIES = [
 
 export default function Home() {
   const [activeModal, setActiveModal] = useState<number | null>(null);
-  const [theme, setTheme] = useState("dark");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [apiError, setApiError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -193,10 +193,6 @@ export default function Home() {
 
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("zerofy-theme") || "dark";
-    setTheme(savedTheme);
-    document.documentElement.className = savedTheme + "-theme";
-
     // Loading screen dismissal
     const fadeTimer = setTimeout(() => setLoadingFade(true), 2000);
     const hideTimer = setTimeout(() => setIsLoading(false), 2600);
@@ -225,13 +221,6 @@ export default function Home() {
       observer.disconnect();
     };
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("zerofy-theme", newTheme);
-    document.documentElement.className = newTheme + "-theme";
-  };
 
   const projectShowcases: ProjectDetails[] = [
     {
@@ -298,59 +287,7 @@ export default function Home() {
       <div className="dot-grid-bg"></div>
 
       {/* Navbar */}
-      <header className="navbar nav-anim-entry">
-        <div className="nav-container">
-          <a href="#home" className="logo">
-            {/* Custom 8-petal orange flower SVG logo */}
-            <svg
-              viewBox="0 0 32 32"
-              className="logo-icon fill-[#ef4d23]"
-              style={{ height: "34px", width: "34px" }}
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="16" cy="16" r="3.5" />
-              {Array.from({ length: 8 }).map((_, i) => {
-                const angle = (i * 2 * Math.PI) / 8;
-                const cx = 16 + 10 * Math.cos(angle);
-                const cy = 16 + 10 * Math.sin(angle);
-                return <circle key={i} cx={cx} cy={cy} r="3.5" />;
-              })}
-            </svg>
-            Zerofy Digital
-          </a>
-          <nav className="nav-links">
-            <a href="#home" className="nav-link">Home</a>
-            <a href="#services" className="nav-link">Services</a>
-            <a href="#work" className="nav-link">Our Work</a>
-          </nav>
-          <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button 
-              onClick={toggleTheme} 
-              className="theme-toggle-btn"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="theme-icon">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="theme-icon">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-              )}
-            </button>
-            <a href="#contact" className="nav-contact-btn">Contact Us</a>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section id="home" className={`hero-section${!isLoading ? " hero-ready" : ""}`}>
@@ -369,9 +306,9 @@ export default function Home() {
           </svg>
 
           <h1 className="hero-title hero-anim-title">
-            We build{" "}
+            We build high-converting{" "}
             <span className="highlight-container text-gradient">
-              high-converting websites
+              websites
               <svg className="underline-squiggle" viewBox="0 0 200 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 11C35.5 4.5 120.5 2 196 6.5C140 10 50 11.5 12 13.5" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -427,7 +364,7 @@ export default function Home() {
       <section id="services" className="services-section">
         <div className="container">
           <h2 className="section-title sr sr-up">Our Services</h2>
-          <p className="contact-subtitle sr sr-up sr-delay-1" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+          <p className="contact-subtitle sr sr-up sr-delay-1 section-lead">
             We specialize in crafting premium web systems and database integrations tailored for modern brands.
           </p>
 
@@ -502,63 +439,31 @@ export default function Home() {
       </section>
 
       {/* ── AI-Powered Website Audit Analyzer Section ── */}
-      <section id="audit" style={{ padding: "100px 0", position: "relative" }}>
+      <section id="audit" className="audit-section">
         <div className="container">
           <h2 className="section-title">Scan Your Website</h2>
-          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+          <p className="contact-subtitle section-lead">
             Uncover conversion killers, slow load speeds, and hidden SEO errors in real-time.
           </p>
 
-          <div style={{
-            maxWidth: "900px",
-            margin: "0 auto",
-            padding: "40px",
-            background: "var(--card-bg)",
-            border: "1px solid var(--card-border)",
-            borderRadius: "20px",
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
-            backdropFilter: "blur(10px)",
-          }}>
+          <div className="audit-container">
             {auditStep === "idle" && (
               <div style={{ textAlign: "center" }}>
-                <h3 style={{ fontSize: "1.5rem", marginBottom: "12px" }}>Is your website leaking customers?</h3>
+                <h3 style={{ fontSize: "clamp(1.15rem, 2vw, 1.5rem)", marginBottom: "12px" }}>Is your website leaking customers?</h3>
                 <p style={{ color: "var(--text-body)", fontSize: "0.95rem", maxWidth: "550px", margin: "0 auto 24px auto" }}>
                   Enter your URL below. Our system will analyze your page speed, mobile layout responsiveness, and structural SEO to find the exact bottlenecks blocking your growth.
                 </p>
-                <div style={{ display: "flex", gap: "12px", marginTop: "24px" }} className="flex-col sm:flex-row">
+                <div className="audit-input-group flex-col sm:flex-row">
                   <input
                     type="url"
                     placeholder="https://example.com"
                     value={auditUrl}
                     onChange={(e) => setAuditUrl(e.target.value)}
-                    style={{
-                      flexGrow: 1,
-                      background: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid var(--card-border)",
-                      borderRadius: "12px",
-                      padding: "16px 20px",
-                      color: "var(--text-main)",
-                      fontSize: "1rem",
-                      outline: "none",
-                      transition: "all 0.3s ease"
-                    }}
-                    className="focus:border-[var(--matcha)]"
+                    className="audit-input focus:border-[var(--matcha)]"
                   />
                   <button 
                     onClick={startAudit} 
-                    style={{
-                      background: "linear-gradient(135deg, var(--matcha), var(--matcha-light))",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "12px",
-                      padding: "16px 32px",
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 4px 15px rgba(58, 134, 255, 0.3)",
-                    }}
-                    className="hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(58,134,255,0.5)] disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none"
+                    className="audit-btn hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(58,134,255,0.5)] disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none"
                     disabled={!auditUrl}
                   >
                     Analyze Now
@@ -569,26 +474,13 @@ export default function Home() {
 
             {auditStep === "scanning" && (
               <div>
-                <div style={{ display: "flex", gap: "6px", marginBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "8px" }}>
-                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ff5f56" }}></div>
-                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ffbd2e" }}></div>
-                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#27c93f" }}></div>
+                <div className="audit-terminal-header">
+                  <div className="audit-terminal-dot dot-r"></div>
+                  <div className="audit-terminal-dot dot-y"></div>
+                  <div className="audit-terminal-dot dot-g"></div>
                   <span style={{ marginLeft: "8px", fontSize: "0.8rem", color: "var(--text-body)" }}>Technical Audit Scanner v1.0.4</span>
                 </div>
-                <div style={{
-                  background: "#02040a",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  fontFamily: "'Courier New', Courier, monospace",
-                  fontSize: "0.9rem",
-                  color: "#39ff14",
-                  minHeight: "220px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
-                  boxShadow: "inset 0 0 20px rgba(0, 0, 0, 0.8)",
-                }}>
+                <div className="audit-terminal">
                   {scanLogs.map((log, i) => {
                     let color = "#39ff14";
                     if (log.includes("[WARN]")) color = "#ffbd2e";
@@ -602,66 +494,66 @@ export default function Home() {
 
             {auditStep === "done" && (
               <div className="audit-results">
-                <h3 style={{ fontSize: "1.4rem", marginBottom: "16px", textAlign: "center" }}>
+                <h3 style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", marginBottom: "16px", textAlign: "center" }}>
                   Audit Report for <span className="text-gradient">{auditUrl}</span>
                 </h3>
                 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
-                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ff5f56", marginBottom: "6px" }}>58</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Performance</div>
+                <div className="audit-score-card">
+                  <div className="audit-score-item">
+                    <div className="audit-score-num poor">58</div>
+                    <div className="audit-score-label">Performance</div>
                   </div>
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
-                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ffbd2e", marginBottom: "6px" }}>72</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>SEO</div>
+                  <div className="audit-score-item">
+                    <div className="audit-score-num average">72</div>
+                    <div className="audit-score-label">SEO</div>
                   </div>
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
-                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ffbd2e", marginBottom: "6px" }}>68</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Mobile UX</div>
+                  <div className="audit-score-item">
+                    <div className="audit-score-num average">68</div>
+                    <div className="audit-score-label">Mobile UX</div>
                   </div>
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
-                    <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ff5f56", marginBottom: "6px" }}>64</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-body)", textTransform: "uppercase", letterSpacing: "1px" }}>Overall Score</div>
+                  <div className="audit-score-item">
+                    <div className="audit-score-num poor">64</div>
+                    <div className="audit-score-label">Overall Score</div>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
-                    <div>
+                <div className="audit-issues-list">
+                  <div className="audit-issue-card">
+                    <div className="audit-issue-icon">!</div>
+                    <div className="audit-issue-content">
                       <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Large Render-Blocking CSS/JS Files</h5>
                       <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Found 7.4MB of uncompressed assets blocking the main paint. Mobile TTI is 4.8 seconds. This causes up to 40% of mobile users to bounce before the page loads.</p>
                     </div>
                   </div>
 
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
-                    <div>
+                  <div className="audit-issue-card">
+                    <div className="audit-issue-icon">!</div>
+                    <div className="audit-issue-content">
                       <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Cumulative Layout Shift (CLS) Issues</h5>
                       <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>14 main layout images do not have explicit width/height parameters, causing content to jump as the page loads. This directly harms your Google Search rankings.</p>
                     </div>
                   </div>
 
                   {/* Blurred Items */}
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start", filter: "blur(6px)", userSelect: "none", pointerEvents: "none", opacity: 0.45 }}>
-                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
-                    <div>
+                  <div className="audit-issue-card blurred">
+                    <div className="audit-issue-icon">!</div>
+                    <div className="audit-issue-content">
                       <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Vulnerable Security Headers Detected</h5>
                       <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Missing X-Frame-Options and Content-Security-Policy configurations leaving forms open to potential spoofing exploits.</p>
                     </div>
                   </div>
 
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--card-border)", borderRadius: "12px", padding: "20px", display: "flex", gap: "16px", alignItems: "flex-start", filter: "blur(6px)", userSelect: "none", pointerEvents: "none", opacity: 0.45 }}>
-                    <div style={{ background: "rgba(255, 95, 86, 0.1)", color: "#ff5f56", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: "bold" }}>!</div>
-                    <div>
+                  <div className="audit-issue-card blurred">
+                    <div className="audit-issue-icon">!</div>
+                    <div className="audit-issue-content">
                       <h5 style={{ fontSize: "1rem", marginBottom: "4px" }}>Unoptimized Asset Assets Delivery</h5>
                       <p style={{ fontSize: "0.9rem", color: "var(--text-body)", margin: 0 }}>Media elements are served directly from hosting root instead of a localized Content Delivery Network (CDN) causing latency spikes.</p>
                     </div>
                   </div>
 
                   {/* Blurred overlay and CTA */}
-                  <div style={{ position: "relative", marginTop: "-120px", paddingTop: "120px", background: "linear-gradient(to bottom, transparent, var(--bg-color) 80%)", zIndex: 10, textAlign: "center" }}>
-                    <h4 style={{ fontSize: "1.25rem", color: "var(--text-main)", marginBottom: "12px", fontWeight: 700 }}>
+                  <div className="audit-blurred-overlay">
+                    <h4 style={{ fontSize: "clamp(1rem, 2vw, 1.25rem)", color: "var(--text-main)", marginBottom: "12px", fontWeight: 700 }}>
                       We found 4 more critical issues with your website layout...
                     </h4>
                     <p style={{ color: "var(--text-body)", fontSize: "0.9rem", marginBottom: "24px", maxWidth: "500px", margin: "0 auto 24px auto" }}>
@@ -669,21 +561,7 @@ export default function Home() {
                     </p>
                     <a 
                       href="#contact" 
-                      style={{
-                        display: "inline-block",
-                        background: "linear-gradient(135deg, var(--mustard), #ff007f)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "50px",
-                        padding: "16px 36px",
-                        fontWeight: 700,
-                        fontSize: "1.1rem",
-                        cursor: "pointer",
-                        textDecoration: "none",
-                        transition: "all 0.3s ease",
-                        boxShadow: "0 8px 24px rgba(255, 0, 127, 0.35)",
-                      }}
-                      className="hover:scale-105 hover:shadow-[0_12px_30px_rgba(255,0,127,0.55)]"
+                      className="audit-unlock-btn hover:scale-105 hover:shadow-[0_12px_30px_rgba(255,0,127,0.55)]"
                       onClick={() => {
                         // Pre-fill message field
                         const msgEl = document.getElementById("message") as HTMLTextAreaElement;
@@ -703,127 +581,61 @@ export default function Home() {
       </section>
 
       {/* ── Client Testimonials Section ── */}
-      <section id="testimonials" className="testimonials-section" style={{ padding: "100px 0" }}>
+      <section id="testimonials" className="testimonials-section">
         <div className="container">
           <h2 className="section-title">Client Testimonials</h2>
-          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+          <p className="contact-subtitle section-lead">
             What founders and operators say about building with Zerofy Digital.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginTop: "48px" }}>
+          <div className="testimonials-grid">
             {/* Card 1 */}
-            <div style={{
-              background: "var(--card-bg)",
-              border: "1px solid var(--card-border)",
-              borderRadius: "16px",
-              padding: "32px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+            <div className="testimonial-card">
               <div>
-                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
-                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                <div className="testimonial-stars">★★★★★</div>
+                <p className="testimonial-quote">
                   "Zerofy took our outdated dental clinic website and built a stunning booking flow. Our online patient inquiries went up by 85% in just two months. Fast, professional, and excellent design."
                 </p>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--matcha-bg-light)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  color: "var(--matcha)",
-                  fontSize: "1.1rem",
-                  border: "1px solid var(--matcha)",
-                }}>SD</div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Dr. Bhavya Patel</h5>
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>Founder, Shanti Dental Care</span>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">SD</div>
+                <div className="testimonial-meta">
+                  <h5>Dr. Bhavya Patel</h5>
+                  <span>Founder, Shanti Dental Care</span>
                 </div>
               </div>
             </div>
 
             {/* Card 2 */}
-            <div style={{
-              background: "var(--card-bg)",
-              border: "1px solid var(--card-border)",
-              borderRadius: "16px",
-              padding: "32px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+            <div className="testimonial-card">
               <div>
-                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
-                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                <div className="testimonial-stars">★★★★★</div>
+                <p className="testimonial-quote">
                   "The conversion rate optimization Zerofy implemented on our funnel was absolute gold. They combined high-impact visual design with extreme page speed. We saw membership signups double."
                 </p>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--matcha-bg-light)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  color: "var(--matcha)",
-                  fontSize: "1.1rem",
-                  border: "1px solid var(--matcha)",
-                }}>RF</div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Harshil Shah</h5>
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>Owner, Roar Fitness Zone</span>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">RF</div>
+                <div className="testimonial-meta">
+                  <h5>Harshil Shah</h5>
+                  <span>Owner, Roar Fitness Zone</span>
                 </div>
               </div>
             </div>
 
             {/* Card 3 */}
-            <div style={{
-              background: "var(--card-bg)",
-              border: "1px solid var(--card-border)",
-              borderRadius: "16px",
-              padding: "32px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-            }} className="hover:border-[var(--matcha)] hover:-translate-y-2">
+            <div className="testimonial-card">
               <div>
-                <div style={{ color: "#ffbd2e", marginBottom: "16px", fontSize: "1.2rem" }}>★★★★★</div>
-                <p style={{ fontSize: "1rem", color: "var(--text-main)", lineHeight: "1.7", marginBottom: "24px", fontStyle: "italic" }}>
+                <div className="testimonial-stars">★★★★★</div>
+                <p className="testimonial-quote">
                   "We needed a highly customized dashboard app built under a tight timeline. Zerofy was incredibly organized, using Next.js to deliver a lightweight, blazing-fast application. Extremely reliable developers."
                 </p>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--matcha-bg-light)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  color: "var(--matcha)",
-                  fontSize: "1.1rem",
-                  border: "1px solid var(--matcha)",
-                }}>VC</div>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <h5 style={{ fontSize: "0.95rem", margin: 0, fontWeight: 700, color: "var(--text-main)" }}>Marcus Harris</h5>
-                  <span style={{ fontSize: "0.8rem", color: "var(--text-body)" }}>CTO, Velora Creative</span>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">VC</div>
+                <div className="testimonial-meta">
+                  <h5>Marcus Harris</h5>
+                  <span>CTO, Velora Creative</span>
                 </div>
               </div>
             </div>
@@ -832,14 +644,14 @@ export default function Home() {
       </section>
 
       {/* ── FAQ Section (Accordions) ── */}
-      <section id="faq" className="faq-section" style={{ padding: "100px 0" }}>
+      <section id="faq" className="faq-section">
         <div className="container">
           <h2 className="section-title">Frequently Asked Questions</h2>
-          <p className="contact-subtitle" style={{ marginTop: "-40px", marginBottom: "40px", textAlign: "center" }}>
+          <p className="contact-subtitle section-lead">
             Got questions? We've got answers. Clear, direct, and no-nonsense.
           </p>
 
-          <div style={{ maxWidth: "800px", margin: "48px auto 0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="faq-list">
             {[
               {
                 q: "How long does it take to build a website?",
@@ -862,53 +674,17 @@ export default function Home() {
               return (
                 <div 
                   key={idx} 
-                  style={{
-                    background: "var(--card-bg)",
-                    border: "1px solid var(--card-border)",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    transition: "all 0.3s ease"
-                  }}
+                  className={`faq-item ${isActive ? "active" : ""}`}
                 >
                   <button 
                     onClick={() => setActiveFaq(isActive ? null : idx)}
-                    style={{
-                      width: "100%",
-                      background: "none",
-                      border: "none",
-                      padding: "24px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      textAlign: "left",
-                      cursor: "pointer",
-                      color: "var(--text-main)",
-                      fontFamily: "var(--font-headings)",
-                      fontSize: "1.1rem",
-                      fontWeight: 700,
-                      outline: "none"
-                    }}
-                    className="hover:text-[var(--matcha-light)]"
+                    className="faq-question"
                   >
                     <span>{item.q}</span>
-                    <span style={{ 
-                      fontSize: "1.5rem", 
-                      lineHeight: "1", 
-                      transition: "transform 0.3s ease",
-                      transform: isActive ? "rotate(45deg)" : "rotate(0deg)",
-                      color: isActive ? "var(--matcha-light)" : "inherit"
-                    }}>+</span>
+                    <span className="faq-icon-toggle">+</span>
                   </button>
-                  <div style={{
-                    maxHeight: isActive ? "200px" : "0",
-                    overflow: "hidden",
-                    transition: "max-height 0.3s ease-out, padding 0.3s ease-out",
-                    padding: isActive ? "0 24px 24px 24px" : "0 24px",
-                    color: "var(--text-body)",
-                    fontSize: "0.95rem",
-                    lineHeight: "1.7"
-                  }}>
-                    <p style={{ margin: 0 }}>{item.a}</p>
+                  <div className="faq-answer">
+                    <p>{item.a}</p>
                   </div>
                 </div>
               );
@@ -922,11 +698,11 @@ export default function Home() {
       <section id="contact" className="contact-section">
         <div className="container">
           <h2 className="section-title sr sr-up">LET'S BUILD TOGETHER.</h2>
-          <p className="contact-subtitle sr sr-up sr-delay-1">Have an idea, business, or project in mind? Let's turn it into something exceptional with automation, design, and modern web experiences.</p>
+          <p className="contact-subtitle sr sr-up sr-delay-1 section-lead">Have an idea, business, or project in mind? Let's turn it into something exceptional with automation, design, and modern web experiences.</p>
 
           <div className="contact-layout-wrapper">
             {formSubmitted ? (
-              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
+              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "min(400px, 50vh)", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
                 <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "var(--matcha-bg-light)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--matcha)" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
                     <polyline points="20 6 9 17 4 12" />
@@ -938,7 +714,7 @@ export default function Home() {
                 </p>
               </div>
             ) : apiError ? (
-              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "400px", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
+              <div className="contact-form-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "min(400px, 50vh)", textAlign: "center", gap: "20px", animation: "fade-in 0.4s ease" }}>
                 <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "rgba(255, 0, 127, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mustard)" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px" }}>
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -1005,7 +781,7 @@ export default function Home() {
                             setMobileDisplay(""); // Reset mobile on country change
                           }
                         }}
-                        style={{ width: "115px", padding: "10px", flexShrink: 0, appearance: "auto" }}
+                        style={{ width: "35%", minWidth: "90px", maxWidth: "115px", padding: "10px", flexShrink: 0, appearance: "auto" }}
                       >
                         {COUNTRIES.map((c, i) => (
                           <option key={i} value={c.dial}>{c.code} ({c.dial})</option>
@@ -1132,7 +908,7 @@ export default function Home() {
             <svg
               viewBox="0 0 32 32"
               className="site-logo-watermark-img fill-[#ef4d23]"
-              style={{ width: "160px", height: "160px", opacity: 0.15 }}
+              style={{ width: "100%", maxWidth: "160px", height: "auto", aspectRatio: "1", opacity: 0.15 }}
               xmlns="http://www.w3.org/2000/svg"
             >
               <circle cx="16" cy="16" r="3.5" />

@@ -41,9 +41,9 @@ export default function ContactPage() {
   return (
     <>
       <Header onOpenConsult={openConsultModal} />
-      <main style={{ paddingTop: "120px", paddingBottom: "80px" }}>
+      <main className="page-main">
         <section className="container">
-          <div className="checkout-split" style={{ gridTemplateColumns: "0.9fr 1.1fr", gap: "48px" }}>
+          <div className="checkout-split">
             
             {/* Scope Summary / Visual Details panel */}
             <ScrollReveal className="card-visualizer-container">
@@ -51,10 +51,10 @@ export default function ContactPage() {
                 <span className="badge-dot"></span>
                 <span>Project Scope Builder</span>
               </div>
-              <h1 className="hero-title" style={{ fontSize: "2.75rem", lineHeight: "1.1" }}>
+              <h1 className="hero-title page-hero-title">
                 Let's Build <span className="text-gradient">Something Rare</span>.
               </h1>
-              <p className="hero-subtitle" style={{ fontSize: "0.95rem", margin: "12px 0 24px 0" }}>
+              <p className="hero-subtitle">
                 Select your engineering requirements and estimated budget framework. Our structural designer will prepare a detailed roadmap for our kickoff discussion.
               </p>
 
@@ -225,7 +225,7 @@ export default function ContactPage() {
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
                   </div>
-                  <h3 className="modal-title" style={{ fontSize: "1.75rem", marginBottom: "12px" }}>Request Verified</h3>
+                  <h3 className="modal-title" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)", marginBottom: "12px" }}>Request Verified</h3>
                   <p className="success-invoice" style={{ display: "inline-block", margin: "0 auto 16px auto" }}>
                     Onboarding Code: <strong>ZF-{Math.floor(1000 + Math.random() * 9000)}-OK</strong>
                   </p>

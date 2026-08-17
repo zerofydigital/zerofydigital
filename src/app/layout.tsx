@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import MouseGlow from "@/components/MouseGlow";
@@ -123,6 +123,13 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -195,8 +202,21 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <head>
+        {/* Theme Initialization Script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('zerofy-theme') || 'dark';
+                  document.documentElement.classList.add(theme + '-theme');
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
         {/* Favicon */}
         <link
           rel="icon"
@@ -233,6 +253,8 @@ export default function RootLayout({
           href="https://wa.me/917990603842?text=Hello%20Zerofy%20Digital,%20I%20would%20like%20to%20inquire%20about%20your%20web%20development%20services!" 
           target="_blank" 
           rel="noopener noreferrer" 
+          className="whatsapp-float-btn hover:scale-110"
+          aria-label="Chat on WhatsApp"
           style={{
             position: "fixed",
             bottom: "24px",
@@ -246,19 +268,11 @@ export default function RootLayout({
             backgroundColor: "#25d366",
             borderRadius: "50%",
             color: "white",
-            boxShadow: "0 6px 20px rgba(37, 211, 102, 0.4)",
-            cursor: "pointer",
-            transition: "transform 0.3s ease",
-            textDecoration: "none",
+            boxShadow: "0 6px 20px rgba(37, 211, 102, 0.4)"
           }}
-          className="hover:scale-110"
-          aria-label="Chat on WhatsApp"
         >
-          <svg 
-            style={{ width: "34px", height: "34px", fill: "currentColor" }} 
-            viewBox="0 0 24 24"
-          >
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.863-9.73.001-2.597-1.006-5.038-2.835-6.87C16.671 2.16 14.238.996 11.64.996c-5.441 0-9.865 4.37-9.868 9.731-.001 1.764.475 3.483 1.378 5.017l-.988 3.61 3.73-.974zm11.233-7.224c-.3-.15-1.772-.875-2.046-.975-.276-.1-.476-.15-.677.15-.2.3-.777.975-.95 1.174-.173.199-.347.224-.647.075-.3-.15-1.265-.467-2.41-1.485-.89-.795-1.49-1.778-1.665-2.078-.175-.3-.019-.462.13-.61.135-.133.3-.349.45-.524.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.677-1.632-.927-2.233-.243-.587-.492-.507-.677-.517-.174-.008-.374-.01-.573-.01-.2 0-.526.075-.801.375-.275.3-1.05 1.025-1.05 2.5s1.075 2.9 1.225 3.1c.15.2 2.11 3.222 5.112 4.521.714.309 1.272.494 1.707.633.717.228 1.368.196 1.884.119.575-.085 1.772-.725 2.022-1.425.25-.7.25-1.299.175-1.424-.075-.125-.275-.2-.575-.35z"/>
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/>
           </svg>
         </a>
       </body>

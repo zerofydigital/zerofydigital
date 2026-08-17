@@ -152,6 +152,7 @@ export default function AiReceptionist() {
 
       {/* ── Chat Float Icon Widget ── */}
       <div 
+        className="ai-chat-float-container"
         style={{
           position: "fixed",
           bottom: "24px",
@@ -256,12 +257,8 @@ export default function AiReceptionist() {
       {/* ── Chat Window Drawer ── */}
       {isOpen && (
         <div 
+          className="ai-chat-window"
           style={{
-            position: "fixed",
-            bottom: "96px",
-            right: "24px",
-            width: "360px",
-            height: "500px",
             background: "var(--card-bg)",
             border: "1px solid var(--card-border)",
             borderRadius: "20px",

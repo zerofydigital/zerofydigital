@@ -33,10 +33,10 @@ export default function ServicesPage() {
               <span className="badge-dot"></span>
               <span>Our Capabilities</span>
             </div>
-            <h1 className="hero-title" style={{ fontSize: "3rem", maxWidth: "800px" }}>
+            <h1 className="subpage-hero-title">
               Bespoke Engineering for <span className="text-gradient">Elite Brands</span>.
             </h1>
-            <p className="hero-subtitle" style={{ fontSize: "1.1rem", maxWidth: "600px", marginTop: "16px" }}>
+            <p className="subpage-hero-subtitle">
               We build custom Web Applications, SaaS Landing pages, E-Commerce platforms, and high-performance business portals. Explore our engineering disciplines.
             </p>
           </ScrollReveal>
